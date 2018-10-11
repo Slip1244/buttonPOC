@@ -103,23 +103,12 @@
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
        */
       function listMajors() {
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: '108hkQqIsgfr-5PVna4fdp76VgGmYFSOle8vbsmKWTWA',
-          range: 'gekc!A2:E',
-        }).then(function(response) {
-          var range = response.result;
-          if (range.values.length > 0) {
-            appendPre('Name, Major:');
-            for (i = 0; i < range.values.length; i++) {
-              var row = range.values[i];
-              // Print columns A and E, which correspond to indices 0 and 4.
-              appendPre(row[0] + ', ' + row[4]);
-            }
-          } else {
-            appendPre('No data found.');
-          }
-        }, function(response) {
-          appendPre('Error: ' + response.result.error.message);
+        gapi.client.sheets.spreadsheets.values.batchGet({
+        spreadsheetId: '108hkQqIsgfr-5PVna4fdp76VgGmYFSOle8vbsmKWTWA',
+        ranges: 'Sheet1!A1:A2'
+        }).then((response) => {
+        var result = response.result;
+        console.log(`${result.valueRanges.length} ranges retrieved.`);
         });
       }
 

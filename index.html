@@ -104,12 +104,22 @@
       function listColors() {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: '108hkQqIsgfr-5PVna4fdp76VgGmYFSOle8vbsmKWTWA',
-          range: 'button1!A2:B'
-        }).then((response) => {
-          var result = response.result;
-          var numRows = result.values ? result.values.length : 0;
-          console.log(`${numRows} rows retrieved.`);
-        });
+          range: 'button1!A2:B',
+        }).then(function(response) {
+          var range = response.result;
+           if (range.values.length > 0) {
+              appendPre('Green | Red:');
+              for (i = 0; i < range.values.length; i++) {
+                var row = range.values[i];
+                // Print columns A and E, which correspond to indices 0 and 4.
+                appendPre(row[0] + ' | ' + row[1]);
+              }
+            } else {
+              appendPre('No data found.');
+            }
+          }, function(response) {
+            appendPre('Error: ' + response.result.error.message);
+          });
         }
   
       </script>

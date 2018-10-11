@@ -64,7 +64,7 @@
           if (isSignedIn) {
             authorizeButton.style.display = 'none';
             signoutButton.style.display = 'block';
-            listMajors();
+            listColors();
           } else {
             authorizeButton.style.display = 'block';
             signoutButton.style.display = 'none';
@@ -101,14 +101,14 @@
          * Print the names and majors of students in a sample spreadsheet:
          * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
         */
-      function listMajors() {
+      function listColors() {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: '108hkQqIsgfr-5PVna4fdp76VgGmYFSOle8vbsmKWTWA',
           range: 'button1!A2:B',
         }).then(function(response) {
           var range = response.result;
            if (range.values.length > 0) {
-              appendPre('Name | Major:');
+              appendPre('Green | Red:');
               for (i = 0; i < range.values.length; i++) {
                 var row = range.values[i];
                 // Print columns A and E, which correspond to indices 0 and 4.

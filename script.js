@@ -1,8 +1,14 @@
-console.log("reee")
-var CLIENT_ID="989294396225-4cipqbm4o5l6uffpet1klashla1rq12v.apps.googleusercontent.com";
-var API_KEY="AIzaSyAWVWjB4hFR9L2zcChkXE2nrsbmQRlDJ90";
+// Client ID and API key from the Developer Console
+var CLIENT_ID = '598385287162-m4r7llc22tuvgcetipov7gr0crpvld17.apps.googleusercontent.com';
+var API_KEY = 'AIzaSyDs_SMb0S5fEaeZcb9MreZY0o7JIBIHo9I';
+
+// Array of API discovery doc URLs for APIs used by the quickstart
 var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
 var SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+
 var authorizeButton = document.getElementById('authorize_button');
 var signoutButton = document.getElementById('signout_button');
 
@@ -52,7 +58,7 @@ function updateSigninStatus(isSignedIn) {
 }
 
 /**
- *  Sign in the user upon button click.
+ *    Sign in the user upon button click.
  */
 function handleAuthClick(event) {
   gapi.auth2.getAuthInstance().signIn();
@@ -67,105 +73,62 @@ function handleSignoutClick(event) {
 }
 
 /**
- * Append a pre element to the body containing the given message
- * as its text node. Used to display the results of the API call.
- *
- * @param {string} message Text to be placed in pre element.
- */
-function appendPre(message) {
-  var pre = document.getElementById('content');
-  var textContent = document.createTextNode(message + '\n');
-  pre.appendChild(textContent);
+*   Main body of code to be run after the client is authorized
+*/
+function main(){
+  let pocCaller = createCaller("1_Vr3VQen93ncj77t83kX_6Y8XuqWsY2INNP3qiPj16s", "A1:C", "RAW", "INSERT_ROWS"); //create caller is defined at the bottom of the page
+
+  //Define DOM elements
+  const formArea = document.querySelector(".pocForm");
+  const textInput = document.getElementById("textForm");
+  const colorInput = document.getElementById("colorForm");
+  const buttonInput = document.getElementById("buttonForm");
+  const submitButton = document.getElementById("submitButton");
+  //This can be done more efficiently with querySelectorAll, but I'm showing each individual event here
+
+  //Make form visible if authorized
+  formArea.style.display = 'block';
+
+  //setup event listeners
+  textInput.addEventListener("change", () => console.log(textInput.value));
+  colorInput.addEventListener("change", () => console.log(colorInput.value));
+  buttonInput.addEventListener("click", () => buttonInput.value++);
+  //submit event listener
+  submitButton.addEventListener("click", handleSubmit); //event listeners can also be given named functions
+
+  /**
+  *   Calls the google api to record values and resets form
+  */
+  function handleSubmit(){
+    let formValues = [[textInput.value,colorInput.value,buttonInput.value]];
+    pocCaller(formValues).then(response => console.log(response.result)).catch(err => console.log(err.result));
+    textInput.value = "";
+    colorInput.value ="000000";
+    buttonInput.value = 0;
+  }
+
 }
 
 /**
- * Print the names and majors of students in a sample spreadsheet:
- * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
- */
-function listMajors() {
-  gapi.client.sheets.spreadsheets.values.get({
-    spreadsheetId: '1mdOExKQRejdSpHpC1rk1fGUCeofJWQ2A5E3sJ7OVF2U',
-    range: 'Sheet1!A2:E',
-  }).then(function(response) {
-    var range = response.result;
-    if (range.values.length > 0) {
-      appendPre('Name, Major:');
-      for (i = 0; i < range.values.length; i++) {
-        var row = range.values[i];
-        // Print columns A and E, which correspond to indices 0 and 4.
-        appendPre(row[0] + ', ' + row[4]);
-      }
-    } else {
-      appendPre('No data found.');
-    }
-  }, function(response) {
-    appendPre('Error: ' + response.result.error.message);
-  });
+*   Curried function to create response generators
+*   @param spreadsheetId The ID of the spreadsheet to update.
+*   @param range The A1 notation of a range to search for a logical table of data.
+*   @param valueInputOption How the input data should be interpreted. (RAW or USER_ENTERED)
+*   @param insertDataOption How the input data should be inserted. (OVERWRITE or INSERT_ROWS)
+*
+*   @param values The spreadsheet values in nested array form.
+*/
+
+let createCaller = (spreadsheetId, range, valueInputOption, insertDataOption) => (values) => {
+  var params = {
+    spreadsheetId: spreadsheetId,
+    range: range,
+    valueInputOption: valueInputOption,
+    insertDataOption, insertDataOption
+  }
+  var valueRangeBody = {
+    values: values
+  }
+  var request = gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody);
+  return request;
 }
-
-
-document.querySelector(".dummy").innerHTML = "Not authorized"
-function main(){
-  //Code in this function is run if the user has been authorized
-  //Requests to the google api should be called (and defined maybe?) here
-  //TODO check what the proper practice is on nested functions
-
-  document.querySelector(".dummy").innerHTML = "Authorized, you can now modify the spreadsheet through this input field"
-  // document.querySelector(".dummy").addEventListener('click', function(){
-  //   console.log("clicked")
-  //   this.innerHTML = "Changed"
-  //   document.querySelector("#textField").value = "test";
-  //   makeRequest("writeTest!A1:B").then(function(response){
-  //     var range = ("writeTest!C1:D");
-  //     writeSheet(range,response.result.values)
-  //   });
-  //
-  // });
-
-  function writeSheet(range,values){
-    /*
-      Takes range argument in form of A1 string notation including sheet name
-      values are in 2D array form
-      array of rows, which are arrays of values
-      [[row1],[row2]]
-    */
-    var body = {
-      values: values
-    };
-
-    gapi.client.sheets.spreadsheets.values.update({
-      spreadsheetId: '1oBHeLAUu9-CPasNNavU0_ZBOFTUNMLEC4ehV3AiwLRA',
-      range: range,
-      valueInputOption:'RAW',
-      resource: body
-    }).then((response) => {
-      //This isn't strictly necessary
-      var result = response.result;
-      console.log(`${result.updatedCells} cells updated.`);
-    });
-  }
-
-  function makeRequest(cell){ //returns a request promise
-    var request = gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: '1oBHeLAUu9-CPasNNavU0_ZBOFTUNMLEC4ehV3AiwLRA',
-      range: cell,
-    });
-    return request
-    /*
-      Access data by
-      makeRequest(cell in A1 notation including sheet name).then(function(response){
-    });
-    or pass a seperate function
-    values are at response.result.values
-    */
-  }
-
-  // writeSheet("writeTest!D1:F",[[1,2],[3,4],[5],[6],[7,8,9]])
-  document.querySelector("#textField").addEventListener("change",function(){
-    var cellValue = document.querySelector("#textField").value;
-    writeSheet("writeTest!A1",[[cellValue]]);
-  });
-  makeRequest("writeTest!A1").then(function(response){
-    var cellValue = response.result.values[0][0];
-    document.querySelector("#textField").value = cellValue
-  });
